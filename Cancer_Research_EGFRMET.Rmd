@@ -1,0 +1,762 @@
+
+# EGFR & MET 
+```{r}
+########### EGFRMET.Rmd ##########
+ex <- subset(x = JNJ_tumor, assays = "data", subset = EGFR > 2 & MET > 1)
+```
+
+```{r}
+JNJ_tumor <- readRDS("../data/JNJ_tumor.RDS")
+matrix <- as.matrix(JNJ_tumor@assays$RNA@data)
+
+gene <- c("EGFR","MET")
+matrix <- matrix[gene,]
+median(matrix[1,])
+median(matrix[2,])
+
+
+```
+
+```{r}
+gene <- c("EGFR","MET")
+JNJ_tumor <- AddModuleScore(object = JNJ_tumor, features = gene, name = "geneSet")
+```
+
+```{r}
+median(JNJ_tumor@meta.data$geneSet1)
+max(JNJ_tumor@meta.data$geneSet1)
+min(JNJ_tumor@meta.data$geneSet1)
+
+JNJ_tumor_EM_high <-subset(JNJ_tumor, features = geneSet1 >-4.88)
+table <- table(JNJ_tumor@meta.data$geneSet1, JNJ_tumor@meta.data$cell)
+write.csv(table, file= "../data/wow.csv")
+
+
+```
+
+
+```{r}
+cutoff_value <- 0
+
+# High와 Low 레이블 생성
+JNJ_tumor$EM <- ifelse(JNJ_tumor@meta.data[["geneSet1"]] > -4.88, "low", "high")
+DimPlot(JNJ_tumor, group.by = "EM", reduction = "tsne", cols = c("red","gray"))
+
+```
+
+
+```{r}
+DimPlot(JNJ_tumor, group.by = "EM", reduction = "tsne", cols = c("red","gray"))
+ggsave("../data/EM_high_low.png", dpi=1000, dev='png',height=3.5, width=4, units="in")
+dev.off()
+```
+
+
+```{r}
+markers = wilcoxauc(JNJ_tumor,  group_by = "EM", assay = NULL )
+markers2<- top_markers(markers, n = 50, auc_min = 0.2)
+write.csv(markers, file="../data/marker_MET.csv")
+write.csv(markers2, file="../data/marker2_MET.csv")
+getwd()
+```
+
+
+```{r, fig.width=15, fig.height=5}
+res1 = markers
+res1 = subset(res1, res1$group == "high")
+
+```
+
+
+```{r, fig.width=15, fig.height=5}
+
+rownames(res1) = res1$feature
+write.csv(res1, file="../data/res1.csv")
+
+title = c("EGFR&MET-high vs EGFR&MET-low")
+
+
+
+selectLab = c("SLC16A3",
+              "S100A11",
+              "ANXA1",
+              "HLA-E",
+              "TPT1",
+              "ARF1",
+              "LDHA"
+              )
+
+
+EnhancedVolcano(res1,
+    lab = rownames(res1),
+    selectLab =selectLab,
+    x = 'logFC',
+    y = 'pval',
+    xlab = bquote(~Log[2]~ 'fold change'),
+    pCutoff = 0.05,
+    FCcutoff = 0.005,
+    #xlim = c(-0.1, 0.1),
+    #ylim = c(0, 5),
+    pointSize = 4.0,
+    labSize = 6.0,
+    labCol = 'black',
+    labFace = 'bold',
+    boxedLabels = TRUE,
+    colAlpha = 4/5,
+    legendPosition = 'right',
+    legendLabSize = 14,
+    legendIconSize = 4.0,
+    drawConnectors = TRUE,
+    widthConnectors = 1.0,
+    colConnectors = "black")
+
+
+selectLab = c("PFN1",
+              "ARPC2",
+              "YWHAZ",
+              "ENO1",
+              "EEF1A1",
+              "HNRNPK"
+              )
+
+
+EnhancedVolcano(res1,
+    lab = rownames(res1),
+    selectLab =selectLab,
+    x = 'logFC',
+    y = 'pval',
+    xlab = bquote(~Log[2]~ 'fold change'),
+    pCutoff = 0.05,
+    FCcutoff = 0.005,
+    #xlim = c(-0.1, 0.1),
+    #ylim = c(0, 5),
+    pointSize = 4.0,
+    labSize = 6.0,
+    labCol = 'black',
+    labFace = 'bold',
+    boxedLabels = TRUE,
+    colAlpha = 4/5,
+    legendPosition = 'right',
+    legendLabSize = 14,
+    legendIconSize = 4.0,
+    drawConnectors = TRUE,
+    widthConnectors = 1.0,
+    colConnectors = "black")
+
+selectLab = c("RAC1",
+              "CFL1",
+              "OAZ1",
+              "ARF5",
+              "GNAS")
+
+
+EnhancedVolcano(res1,
+    lab = rownames(res1),
+    selectLab =selectLab,
+    x = 'logFC',
+    y = 'pval',
+    xlab = bquote(~Log[2]~ 'fold change'),
+    pCutoff = 0.05,
+    FCcutoff = 0.005,
+    #xlim = c(-0.1, 0.1),
+    #ylim = c(0, 5),
+    pointSize = 4.0,
+    labSize = 6.0,
+    labCol = 'black',
+    labFace = 'bold',
+    boxedLabels = TRUE,
+    colAlpha = 4/5,
+    legendPosition = 'right',
+    legendLabSize = 14,
+    legendIconSize = 4.0,
+    drawConnectors = TRUE,
+    widthConnectors = 1.0,
+    colConnectors = "black")
+
+
+
+selectLab = c("MET","STAT4","CD274","BACE2","STK40","PRSS23",'DPYD',"CAV1","S100A4","PYGL","HAVCR2","CD276")
+
+
+EnhancedVolcano(res1,
+    lab = rownames(res1),
+    selectLab =selectLab,
+    x = 'logFC',
+    y = 'pval',
+    xlab = bquote(~Log[2]~ 'fold change'),
+    pCutoff = 0.05,
+    FCcutoff = 0.5,
+    xlim = c(-2, 5),
+    #ylim = c(0, 5),
+    pointSize = 4.0,
+    labSize = 6.0,
+    labCol = 'black',
+    labFace = 'bold',
+    boxedLabels = TRUE,
+    colAlpha = 4/5,
+    legendPosition = 'right',
+    legendLabSize = 14,
+    legendIconSize = 4.0,
+    drawConnectors = TRUE,
+    widthConnectors = 1.0,
+    colConnectors = "black")
+
+
+volcano_plot <- function(x) {
+res1$diffexpressed <- "NO"
+res1$diffexpressed[res1$logFC > 0.005 & res1$pval < 0.05] <- "UP"
+res1$diffexpressed[res1$logFC < -0.005 & res1$pval < 0.05] <- "DOWN"
+res1$delabel <- NA
+res1$gene_symbol = rownames(res1)
+res1$delabel[res1$diffexpressed != "NO"] <- res1$gene_symbol[res1$diffexpressed != "NO"]
+ggplot(data=res1, aes(x=logFC, y=-log10(pval), col=diffexpressed, label=delabel)) +
+geom_point() +
+theme_minimal() +
+geom_text_repel() +
+scale_color_manual(values=c("blue", "black", "red")) +
+geom_vline(xintercept=c(-0.5, 0.5), col="gray") +
+geom_hline(yintercept=-log10(0.05), col="gray")+
+xlim (-0.05,0.05)+
+ylim (0,10)
+}
+
+volcano_plot(res1)
+
+
+```
+```{r, fig.height=3.5, fig.width=4}
+JNJ_tumor$Tumor_group
+VlnPlot(JNJ_tumor, features = c("LDHA"), group.by = "Tumor_group", pt.size=0)
+DotPlot(JNJ_tumor, features = c("LDHA"), group.by = "Tumor_group", scale.max = 100, dot.scale = 15, cols = c("gray","red"))
+DotPlot(JNJ_tumor, features = c("SLC16A3"), group.by = "Tumor_group", scale.max = 100, dot.scale = 15, cols = c("gray","red"))
+DotPlot(JNJ_tumor, features = c('LDHA',"SLC16A3"), group.by = "Tumor_group",  cols = c("gray","red"))
+JNJ_tumor@assays$RNA["LDHA"]
+
+```
+
+
+
+```{r, fig.height=3.5, fig.width=4}
+plot= DotPlot(JNJ_tumor, group.by = "EM", features =c("HIF1A","HDAC1","KDM1A","KDM2A","CA9","VEGFA","TWIST1"),  cols = c("gray","red"))
+plot + theme(axis.text.x = element_text(angle = 90))
+ggsave("../data/hypoxia_markers.png", dpi=1000, dev='png',height=4, width=6, units="in")
+dev.off()
+```
+
+
+```{r, fig.width=3.5, fig.height=3}
+VlnPlot(JNJ_tumor, features = c("LDHA"), group.by = "EM", pt.size=0, cols = c("red","gray"))
+VlnPlot(JNJ_tumor, features = c("S100A11"), group.by = "EM", pt.size=0, cols = c("red","gray"))
+VlnPlot(JNJ_tumor, features = c("ANXA1"), group.by = "EM", pt.size=0, cols = c("red","gray"))
+VlnPlot(JNJ_tumor, features = c("SLC16A3"), group.by = "EM", pt.size=0, cols = c("red","gray"))
+VlnPlot(JNJ_tumor, features = c("ARF1"), group.by = "EM", pt.size=0, cols = c("red","gray"))
+VlnPlot(JNJ_tumor, features = c("HLA-E"), group.by = "EM", pt.size=0, cols = c("red","gray"))
+VlnPlot(JNJ_tumor, features = c("TPT1"), group.by = "EM", pt.size=0, cols = c("red","gray"))
+
+```
+
+
+
+```{r, fig.width=6, fig.height=3.5}
+plot= DotPlot(JNJ_tumor, group.by = "EM", features =c("HK2","GPI","PFK1","ALDOA","PGK1","PGAM1","ENO1","ENO2"),  cols = c("gray","red"))
+plot + theme(axis.text.x = element_text(angle = 90))
+
+plot= DotPlot(JNJ_tumor, group.by = "Tumor_group", features =c("HK2","GPI","PFK1","ALDOA","PGK1","PGAM1","ENO1","ENO2"),  cols = c("gray","red"))
+plot + theme(axis.text.x = element_text(angle = 90))
+ggsave("../data/glycolytic_markers_group.png", dpi=1000, dev='png',height=4, width=6, units="in")
+dev.off()
+
+```
+
+```{r, fig.width=6, fig.height=4}
+plot= DotPlot(JNJ_tumor, group.by = "Tumor_group", features =c("HK2","GPI","PFK1","ALDOA","PGK1","PGAM1","ENO1","ENO2","PKM2"),  cols = c("gray","red"))
+plot + theme(axis.text.x = element_text(angle = 90))
+
+```
+
+```{r, fig.width=6, fig.height=4}
+
+plot= DotPlot(JNJ_tumor, group.by = "EM", features =c("HIF1A","HDAC1","KDM1A","KDM2A","CA9","VEGFA","TWIST1"),  cols = c("gray","red"))
+plot + theme(axis.text.x = element_text(angle = 90))
+
+
+plot= DotPlot(JNJ_tumor, group.by = "Tumor_group", features =c("HIF1A","HDAC1","KDM1A","KDM2A","CA9","VEGFA","TWIST1"),  cols = c("gray","red"))
+plot + theme(axis.text.x = element_text(angle = 90))
+ggsave("../data/hypoxia_markers_group.png", dpi=1000, dev='png',height=4, width=6, units="in")
+dev.off()
+
+```
+
+```{r}
+FeaturePlot(JNJ_tumor, features = c("MET", "LDHA"), blend = TRUE, reduction = "tsne")
+FeaturePlot(JNJ_tumor, features = c("MET"))
+```
+
+
+```{r}
+# Relevel object@ident
+JNJ_tumor = SetIdent(JNJ_tumor, value=JNJ_tumor$RNA_snn_res.1)
+data$cluster <- JNJ_tumor@active.ident
+
+
+#m <- ggplot(data, aes(x = UMAP_1, y = UMAP_2,color=data$cluster, show.legend = TRUE)) +
+# geom_point()
+
+m <- ggplot(data, aes(x = tSNE_1, y = tSNE_2, show.legend = TRUE)) +
+ geom_point()
+# contour lines
+#m + geom_density_2d()
+```
+
+```{r, fig.width=12, fig.height=10}
+m + geom_density_2d_filled(alpha = 0.5) +
+  geom_density_2d(size = 0.1, colour = "white") + facet_wrap(vars(cluster))
+```
+
+```{r, fig.width=12, fig.height=10}
+
+m + geom_density_2d_filled(alpha = 0.7) +
+  geom_density_2d(size = 0.1, colour = "white") + facet_wrap(vars(cluster))+scale_fill_brewer()
+
+```
+
+
+```{r}
+VlnPlot(JNJ_tumor, features = c("EGFR"), group.by = "EM", pt.size=0, cols = c("red","gray"))
+ggsave("../data/EGFR_level_EM.png", dpi=1000, dev='png',height=4, width=6, units="in")
+dev.off()
+VlnPlot(JNJ_tumor, features = c("MET"), group.by = "EM", pt.size=0, cols = c("red","gray"))
+ggsave("../data/MET_level_EM.png", dpi=1000, dev='png',height=4, width=6, units="in")
+dev.off()
+```
+
+
+
+```{r, fig.width=5, fig.height=5}
+DimPlot(JNJ_tumor, group.by = "Tumor_group", reduction = "tsne", cols = Cols)
+
+```
+
+```{r, fig.width=5, fig.height=5}
+DotPlot(JNJ_tumor, group.by ="Tumor_group", features = c("EGFR","MET"),cols =c("gray","red"))
+DotPlot(JNJ_tumor, group.by ="Tumor_group", features = c("CD274","PVR"),cols =c("gray","red"))
+```
+
+```{r, fig.width=10, fig.height=9}
+JNJ_tumor_H <- NormalizeData(JNJ_tumor) 
+JNJ_tumor_H <- FindVariableFeatures(JNJ_tumor) 
+JNJ_tumor_H <- ScaleData(JNJ_tumor)
+JNJ_tumor_H <- RunPCA(JNJ_tumor,verbose = FALSE)
+JNJ_tumor_H$sample_id
+JNJ_tumor_H <- RunHarmony(JNJ_tumor_H, group.by.vars = "sample_id")
+JNJ_tumor_H <- RunUMAP(JNJ_tumor_H, reduction = "harmony", dims = 1:40,local.connectivity = 5L,learning.rate = 1)
+JNJ_tumor_H <- FindNeighbors(JNJ_tumor_H, reduction = "harmony", dims = 1:30) %>% FindClusters()
+DimPlot(JNJ_tumor_H, group.by = c("sample_id"))
+
+DimPlot(JNJ_tumor_H, group.by = c("Tumor_group"), reduction ="harmony")
+FeaturePlot(JNJ_tumor_H, features = c("EGFR","MET"), reduction="harmony", max.cutoff = 2)
+FeaturePlot(JNJ_tumor_H, features = c("EGFR","MET"), reduction="umap", max.cutoff = 2, split.by = "Tumor_group")
+
+saveRDS(JNJ_tumor_H.RDS)
+```
+
+
+```{r}
+markers = wilcoxauc(JNJ_tumor, c("Control","Ami"), group_by = "Tumor_group", assay = NULL )
+markers<- top_markers(markers, n = 20, auc_min = 0.5, pct_in_min = 20, pct_out_max = 20)
+write.csv(markers, file = "../data/JNJ_mouse_human_snn_res03.csv")
+```
+
+
+
+```{r, fig.width=7, fig.height=4}
+
+plot= DotPlot(JNJ_tumor, group.by ="EM", features = c("MET","STAT4","CD274","BACE2","STK40","PRSS23",'DPYD',"CAV1","S100A4","PYGL","HAVCR2","CD276"),cols =c("gray","red"))
+plot + theme(axis.text.x = element_text(angle = 90))
+ggsave("../data/MET_EM.png", dpi=1000, dev='png',height=4, width=7, units="in")
+dev.off()
+
+plot= DotPlot(JNJ_tumor, group.by ="Tumor_group", features = c("MET","STAT4","CD274","BACE2","STK40","PRSS23",'DPYD',"CAV1","S100A4","PYGL","HAVCR2","CD276"),cols =c("gray","red"))
+plot + theme(axis.text.x = element_text(angle = 90))
+ggsave("../data/MET_group.png", dpi=1000, dev='png',height=4, width=7, units="in")
+dev.off()
+```
+
+# MET
+```{r}
+########### MET.Rmd ##########
+# Get the expression matrix
+expression_matrix <- JNJ_tumor@assays$RNA@data
+
+# Find the row index for the MET gene
+met_gene_row <- which(rownames(expression_matrix) == "MET")
+met_gene_row <- which(rownames(expression_matrix) == "EGFR")
+
+# Extract the expression values for the MET gene
+met_expression_values <- expression_matrix[met_gene_row, ]
+
+# Calculate the median expression value
+median_met_expression <- median(met_expression_values)
+median_met_expression
+
+```
+```{r}
+MET = subset(JNJ_tumor, subset = MET > 6)
+MET = colnames(MET)
+DimPlot(JNJ_tumor, cells.highlight = MET, reduction = "tsne")
+
+```
+
+
+```{r}
+DimPlot(JNJ_tumor, group.by  = "MET", reduction = "tsne")
+```
+
+```{r}
+JNJ_tumor
+FeatureScatter(JNJ_tumor, "EGFR", "MET", group.by = "Tumor_group")
+```
+
+
+```{r, fig.width=12, fig.height=6}
+dittoBarPlot(JNJ_tumor, var="RNA_snn_res.1", group.by = "Tumor_group",
+             color.panel = CCols,
+             colors = seq_along(CCols)
+)
+
+VlnPlot(JNJ_tumor, group.by = "RNA_snn_res.1", features= "MET", cols =CCols, pt.size = 0)
+```
+
+```{r}
+DimPlot(JNJ_tumor, reduction="tsne", group.by = "RNA_snn_res.1", cols=Cols, label = T)
+```
+
+
+```{r}
+JNJ_tumor = SetIdent(JNJ_tumor, value =JNJ_tumor$RNA_snn_res.1)
+new.cluster.ids <- c(
+"MET_low",#0
+"MET_high",#1
+"MET_low",#2
+"MET_low",#3
+"MET_low",#4
+"MET_high",#5
+"MET_low",#6
+"MET_low",#7
+"MET_low",#8
+"MET_high",#9
+"MET_low",#10
+"MET_high",#11
+"MET_low",#12
+"MET_high",#13
+"MET_high",#14
+"MET_low",#15
+"MET_low",#16
+"MET_low"#17
+
+)
+
+names(new.cluster.ids) <- levels(JNJ_tumor)
+str(new.cluster.ids)
+JNJ_tumor <- RenameIdents(JNJ_tumor, new.cluster.ids)
+JNJ_tumor$MET = JNJ_tumor@active.ident
+
+
+```
+
+```{r}
+markers = wilcoxauc(JNJ_tumor,  group_by = "MET", assay = NULL )
+markers2<- top_markers(markers, n = 50, auc_min = 0.2)
+write.csv(markers, file="../data/marker_MET.csv")
+write.csv(markers2, file="../data/marker2_MET.csv")
+```
+
+# Volcano plot
+```{r, fig.width=15, fig.height=5}
+res1 = markers
+res1 = subset(res1, res1$group == "MET_high")
+rownames(res1) = res1$feature
+title = c("MET-high vs MET-low")
+
+
+
+selectLab = c("SLC16A3",
+              "S100A11",
+              "ANXA1",
+              "HLA-E",
+              "TPT1",
+              "ARF1",
+              "LDHA"
+              )
+
+
+EnhancedVolcano(res1,
+    lab = rownames(res1),
+    selectLab =selectLab,
+    x = 'logFC',
+    y = 'pval',
+    xlab = bquote(~Log[2]~ 'fold change'),
+    pCutoff = 0.05,
+    FCcutoff = 0.005,
+    #xlim = c(-0.1, 0.1),
+    #ylim = c(0, 5),
+    pointSize = 4.0,
+    labSize = 6.0,
+    labCol = 'black',
+    labFace = 'bold',
+    boxedLabels = TRUE,
+    colAlpha = 4/5,
+    legendPosition = 'right',
+    legendLabSize = 14,
+    legendIconSize = 4.0,
+    drawConnectors = TRUE,
+    widthConnectors = 1.0,
+    colConnectors = "black")
+
+
+selectLab = c("PFN1",
+              "ARPC2",
+              "YWHAZ",
+              "ENO1",
+              "EEF1A1",
+              "HNRNPK"
+              )
+
+
+EnhancedVolcano(res1,
+    lab = rownames(res1),
+    selectLab =selectLab,
+    x = 'logFC',
+    y = 'pval',
+    xlab = bquote(~Log[2]~ 'fold change'),
+    pCutoff = 0.05,
+    FCcutoff = 0.005,
+    #xlim = c(-0.1, 0.1),
+    #ylim = c(0, 5),
+    pointSize = 4.0,
+    labSize = 6.0,
+    labCol = 'black',
+    labFace = 'bold',
+    boxedLabels = TRUE,
+    colAlpha = 4/5,
+    legendPosition = 'right',
+    legendLabSize = 14,
+    legendIconSize = 4.0,
+    drawConnectors = TRUE,
+    widthConnectors = 1.0,
+    colConnectors = "black")
+
+selectLab = c("RAC1",
+              "CFL1",
+              "OAZ1",
+              "ARF5",
+              "GNAS")
+
+
+EnhancedVolcano(res1,
+    lab = rownames(res1),
+    selectLab =selectLab,
+    x = 'logFC',
+    y = 'pval',
+    xlab = bquote(~Log[2]~ 'fold change'),
+    pCutoff = 0.05,
+    FCcutoff = 0.005,
+    #xlim = c(-0.1, 0.1),
+    #ylim = c(0, 5),
+    pointSize = 4.0,
+    labSize = 6.0,
+    labCol = 'black',
+    labFace = 'bold',
+    boxedLabels = TRUE,
+    colAlpha = 4/5,
+    legendPosition = 'right',
+    legendLabSize = 14,
+    legendIconSize = 4.0,
+    drawConnectors = TRUE,
+    widthConnectors = 1.0,
+    colConnectors = "black")
+
+
+
+selectLab = c("MET","STAT4","CD274","BACE2","STK40","PRSS23",'DPYD',"CAV1","S100A4","PYGL","HAVCR2","CD276")
+
+
+EnhancedVolcano(res1,
+    lab = rownames(res1),
+    selectLab =selectLab,
+    x = 'logFC',
+    y = 'pval',
+    xlab = bquote(~Log[2]~ 'fold change'),
+    pCutoff = 0.05,
+    FCcutoff = 0.5,
+    xlim = c(-2, 5),
+    #ylim = c(0, 5),
+    pointSize = 4.0,
+    labSize = 6.0,
+    labCol = 'black',
+    labFace = 'bold',
+    boxedLabels = TRUE,
+    colAlpha = 4/5,
+    legendPosition = 'right',
+    legendLabSize = 14,
+    legendIconSize = 4.0,
+    drawConnectors = TRUE,
+    widthConnectors = 1.0,
+    colConnectors = "black")
+
+
+volcano_plot <- function(x) {
+res1$diffexpressed <- "NO"
+res1$diffexpressed[res1$logFC > 0.005 & res1$pval < 0.05] <- "UP"
+res1$diffexpressed[res1$logFC < -0.005 & res1$pval < 0.05] <- "DOWN"
+res1$delabel <- NA
+res1$gene_symbol = rownames(res1)
+res1$delabel[res1$diffexpressed != "NO"] <- res1$gene_symbol[res1$diffexpressed != "NO"]
+ggplot(data=res1, aes(x=logFC, y=-log10(pval), col=diffexpressed, label=delabel)) +
+geom_point() +
+theme_minimal() +
+geom_text_repel() +
+scale_color_manual(values=c("blue", "black", "red")) +
+geom_vline(xintercept=c(-0.5, 0.5), col="gray") +
+geom_hline(yintercept=-log10(0.05), col="gray")+
+xlim (-0.05,0.05)+
+ylim (0,10)
+}
+
+volcano_plot(res1)
+
+
+```
+```{r, fig.height=3.5, fig.width=4}
+JNJ_tumor$Tumor_group
+VlnPlot(JNJ_tumor, features = c("LDHA"), group.by = "Tumor_group", pt.size=0)
+DotPlot(JNJ_tumor, features = c("LDHA"), group.by = "Tumor_group", scale.max = 100, dot.scale = 15, cols = c("gray","red"))
+DotPlot(JNJ_tumor, features = c('LDHA',"SLC16A3"), group.by = "Tumor_group",  cols = c("gray","red"))
+JNJ_tumor@assays$RNA["LDHA"]
+
+```
+
+```{r, fig.width=3.5, fig.height=3}
+VlnPlot(JNJ_tumor, features = c("LDHA"), group.by = "MET", pt.size=0, cols = c("gray","red"))
+VlnPlot(JNJ_tumor, features = c("S100A11"), group.by = "MET", pt.size=0, cols = c("gray","red"))
+VlnPlot(JNJ_tumor, features = c("ANXA1"), group.by = "MET", pt.size=0, cols = c("gray","red"))
+VlnPlot(JNJ_tumor, features = c("SLC16A3"), group.by = "MET", pt.size=0, cols = c("gray","red"))
+VlnPlot(JNJ_tumor, features = c("ARF1"), group.by = "MET", pt.size=0, cols = c("gray","red"))
+VlnPlot(JNJ_tumor, features = c("HLA-E"), group.by = "MET", pt.size=0, cols = c("gray","red"))
+VlnPlot(JNJ_tumor, features = c("TPT1"), group.by = "MET", pt.size=0, cols = c("gray","red"))
+
+```
+
+```{r, fig.width=6, fig.height=3.5}
+
+plot= DotPlot(JNJ_tumor, group.by = "MET", features =c("HK2","GPI","PFK1","ALDOA","PGK1","PGAM1","ENO1","ENO2"),  cols = c("gray","red"))
+plot + theme(axis.text.x = element_text(angle = 90))
+
+```
+```{r, fig.width=6, fig.height=4}
+
+plot= DotPlot(JNJ_tumor, group.by = "Tumor_group", features =c("HK2","GPI","PFK1","ALDOA","PGK1","PGAM1","ENO1","ENO2","PKM2"),  cols = c("gray","red"))
+plot + theme(axis.text.x = element_text(angle = 90))
+
+
+
+```
+
+```{r, fig.width=6, fig.height=4}
+
+plot= DotPlot(JNJ_tumor, group.by = "MET", features =c("HIF1A","HDAC1","KDM1A","KDM2A","CA9","VEGFA","TWIST1"),  cols = c("gray","red"))
+plot + theme(axis.text.x = element_text(angle = 90))
+
+
+plot= DotPlot(JNJ_tumor, group.by = "Tumor_group", features =c("HIF1A","HDAC1","KDM1A","KDM2A","CA9","VEGFA","TWIST1"),  cols = c("gray","red"))
+plot + theme(axis.text.x = element_text(angle = 90))
+
+```
+
+```{r}
+FeaturePlot(JNJ_tumor, features = c("MET", "LDHA"), blend = TRUE, reduction = "tsne")
+FeaturePlot(JNJ_tumor, features = c("MET"))
+```
+
+
+```{r}
+# Relevel object@ident
+JNJ_tumor = SetIdent(JNJ_tumor, value=JNJ_tumor$RNA_snn_res.1)
+data$cluster <- JNJ_tumor@active.ident
+
+
+#m <- ggplot(data, aes(x = UMAP_1, y = UMAP_2,color=data$cluster, show.legend = TRUE)) +
+# geom_point()
+
+m <- ggplot(data, aes(x = tSNE_1, y = tSNE_2, show.legend = TRUE)) +
+ geom_point()
+# contour lines
+#m + geom_density_2d()
+```
+
+```{r, fig.width=12, fig.height=10}
+m + geom_density_2d_filled(alpha = 0.5) +
+  geom_density_2d(size = 0.1, colour = "white") + facet_wrap(vars(cluster))
+```
+
+```{r, fig.width=12, fig.height=10}
+
+m + geom_density_2d_filled(alpha = 0.7) +
+  geom_density_2d(size = 0.1, colour = "white") + facet_wrap(vars(cluster))+scale_fill_brewer()
+
+```
+
+
+
+```{r, fig.width=5, fig.height=5}
+DimPlot(JNJ_tumor, group.by = "Tumor_group", reduction = "tsne", cols = Cols)
+
+```
+
+```{r, fig.width=5, fig.height=5}
+DotPlot(JNJ_tumor, group.by ="Tumor_group", features = c("EGFR","MET"),cols =c("gray","red"))
+DotPlot(JNJ_tumor, group.by ="Tumor_group", features = c("CD274","PVR"),cols =c("gray","red"))
+```
+
+```{r, fig.width=10, fig.height=9}
+JNJ_tumor_H <- NormalizeData(JNJ_tumor) 
+JNJ_tumor_H <- FindVariableFeatures(JNJ_tumor) 
+JNJ_tumor_H <- ScaleData(JNJ_tumor)
+JNJ_tumor_H <- RunPCA(JNJ_tumor,verbose = FALSE)
+JNJ_tumor_H$sample_id
+JNJ_tumor_H <- RunHarmony(JNJ_tumor_H, group.by.vars = "sample_id")
+JNJ_tumor_H <- RunUMAP(JNJ_tumor_H, reduction = "harmony", dims = 1:40,local.connectivity = 5L,learning.rate = 1)
+JNJ_tumor_H <- FindNeighbors(JNJ_tumor_H, reduction = "harmony", dims = 1:30) %>% FindClusters()
+DimPlot(JNJ_tumor_H, group.by = c("sample_id"))
+
+DimPlot(JNJ_tumor_H, group.by = c("Tumor_group"), reduction ="harmony")
+FeaturePlot(JNJ_tumor_H, features = c("EGFR","MET"), reduction="harmony", max.cutoff = 2)
+FeaturePlot(JNJ_tumor_H, features = c("EGFR","MET"), reduction="umap", max.cutoff = 2, split.by = "Tumor_group")
+
+saveRDS(JNJ_tumor_H.RDS)
+```
+
+
+```{r}
+markers = wilcoxauc(JNJ_tumor, c("Control","Ami"), group_by = "Tumor_group", assay = NULL )
+markers<- top_markers(markers, n = 20, auc_min = 0.5, pct_in_min = 20, pct_out_max = 20)
+write.csv(markers, file = "../data/JNJ_mouse_human_snn_res03.csv")
+```
+
+
+```{r, fig.width=7, fig.height=4}
+
+plot= DotPlot(JNJ_tumor, group.by ="EGFR", features = c("MET","STAT4","CD274","BACE2","STK40","PRSS23",'DPYD',"CAV1","S100A4","PYGL","HAVCR2","CD276"),cols =c("gray","red"))
+plot + theme(axis.text.x = element_text(angle = 90))
+
+
+plot= DotPlot(JNJ_tumor, group.by ="Tumor_group", features = c("MET","STAT4","CD274","BACE2","STK40","PRSS23",'DPYD',"CAV1","S100A4","PYGL","HAVCR2","CD276"),cols =c("gray","red"))
+plot + theme(axis.text.x = element_text(angle = 90))
+```
+
+```{r}
+save.image("../data/JNJ_3003.Rdata")
+```
+
+
+
